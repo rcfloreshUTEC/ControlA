@@ -1,0 +1,70 @@
+{% extends 'base/base.html' %}
+{% block title %}
+    {{ page_name }}
+{% endblock title %}
+
+{% block pagetitle %}
+    <div class="pagetitle">
+        <h1>
+            {{ page_name }}
+        </h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}">
+                        Inicio
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    Académico
+                </li>
+                <li class="breadcrumb-item active">
+                    {{ page_name }}
+                </li>
+            </ol>
+        </nav>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% block cardtitle %}
+                            {{ page_name }}
+                        {% endblock %}
+                    </h5>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <label for="archivo">Seleccionar archivo CSV:</label>
+                        <input type="file" name="archivo" accept=".csv" required>
+                        <button type="submit">Subir</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incluir SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Mostrar el popper con el resultado -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            {% if messages %}
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: '{% if message.tags == "success" %}success{% elif message.tags == "warning" %}warning{% else %}error{% endif %}',
+                        title: '{{ message }}',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                {% endfor %}
+            {% endif %}
+        });
+    </script>
+{% endblock content %}

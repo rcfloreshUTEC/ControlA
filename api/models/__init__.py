@@ -1,0 +1,1 @@
+from .model_check_student import Asistencia

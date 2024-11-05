@@ -1,0 +1,2 @@
+from .model_carga_academica import CargaAcademica
+from .model_carga_inscripcion import CargaInscripcion

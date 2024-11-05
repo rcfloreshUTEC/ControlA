@@ -1,0 +1,47 @@
+!@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}
+    {{ page_name }}
+{% endblock title %}
+
+{% block pagetitle %}
+    <div class="pagetitle">
+        <h1>
+            {{ page_name }}
+        </h1>
+        <nav>
+            <ol class="breadcrumb Active">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}">
+                        Inicio
+                    </a></li>
+
+            </ol>
+        </nav>
+    </div>
+
+{% endblock %}
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% block cardtitle %}
+                            {{ page_name }}
+                        {% endblock %}</h5>
+
+                    Welcome {{ user.username }}!
+
+
+<iframe title="mongo-test" width="1140" height="541.25" src="https://app.powerbi.com/reportEmbed?reportId=ff24f501-016c-4b5c-accc-a58af85496a9&autoAuth=true&ctid=7740f9b3-e86c-4b9d-8e10-8ebbb40200a0" frameborder="0" allowFullScreen="true"></iframe>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

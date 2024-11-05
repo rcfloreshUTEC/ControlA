@@ -1,0 +1,107 @@
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        {% if messages %}
+            const messages = [
+                {% for message in messages %}
+                    {
+                        icon: '{% if "success" in message.tags %}success{% elif "warning" in message.tags %}warning{% elif "error" in message.tags %}error{% else %}info{% endif %}',
+                        title: '{{ message }}'
+                    },
+                {% endfor %}
+            ];
+
+            messages.forEach(function(msg) {
+                Swal.fire({
+                    icon: msg.icon,
+                    title: msg.title,
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            });
+        {% endif %}
+    });
+</script>
+
+<script>
+
+    $(document).ready(function () {
+        $('.select2').select2({
+            placeholder: "Seleccionar una materia",
+            allowClear: true
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const carnetInput = document.getElementById("carnet");
+
+        carnetInput.addEventListener("input", function () {
+            let value = carnetInput.value;
+
+            value = value.replace(/[^0-9-]/g, "");
+
+            value = value.split("").filter((char, index) => {
+                return char !== "-" || (index === 2 || index === 7);
+            }).join("");
+
+            if (value.length > 2 && value[2] !== "-") {
+                value = value.slice(0, 2) + "-" + value.slice(2);
+            }
+            if (value.length > 7 && value[7] !== "-") {
+                value = value.slice(0, 7) + "-" + value.slice(7);
+            }
+
+            if (value.length > 12) {
+                value = value.slice(0, 12);
+            }
+
+            carnetInput.value = value;
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr("#fecha", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            locale: "es"
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        tippy('#info-icon', {
+            content: "El campo de selección muestra: Código de materia, Nombre de materia, Sección, Horario y Días.",
+            trigger: 'click',
+            placement: 'right',
+            arrow: true,
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#floatingSelect').select2({
+            placeholder: "Select an option",
+            allowClear: true
+        });
+
+        // Ajustar la posición del label para que flote correctamente
+        $('#floatingSelect').on('select2:open', function () {
+            $(this).closest('.form-floating').find('label').addClass('select2-label-float');
+        });
+
+        $('#floatingSelect').on('select2:close', function () {
+            if (!$(this).val()) {
+                $(this).closest('.form-floating').find('label').removeClass('select2-label-float');
+            }
+        });
+    });
+</script>
