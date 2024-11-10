@@ -88,6 +88,7 @@ DATABASES = {
         "PASSWORD": "Charlie551!@",
         "HOST": "localhost",
         "PORT": "3306",
+
     },
     'mongodb':{
         'ENGINE': 'djongo',
