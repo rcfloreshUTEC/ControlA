@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -163,3 +163,7 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'error',
 }
+
+# API_KEY = os.getenv('API_KEY', '662f1d11-6daa-42bd-9e70-c4114bacf43e')
+
+API_KEY = '662f1d11-6daa-42bd-9e70-c4114bacf43e'

@@ -1,14 +1,19 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
+from django.conf import settings
 import json
 from datetime import datetime, time
 import pytz
 from pymongo import MongoClient
-from django.conf import settings
 
 @csrf_exempt
 def check_student(request):
+    # Verifica la API Key
+    api_key = request.headers.get('X-API-KEY')
+    if api_key != settings.API_KEY:
+        return JsonResponse({'error': 'API Key no válida'}, status=403)
+
     tz = pytz.timezone('America/El_Salvador')
 
     if request.method == 'POST':
@@ -23,7 +28,7 @@ def check_student(request):
             # Realizar la consulta en la base de datos
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT a.Carnet, b.Aula, b.Dias, b.hora, b.CodMat, RIGHT(b.Ciclo, 7) as Ciclo
+                    SELECT a.Carnet, b.Aula, b.Dias, b.hora, b.CodMat, b.Ciclo
                     FROM academic_cargainscripcion a, academic_cargaacademica b
                     WHERE b.Aula = %s
                     AND a.Carnet = %s
@@ -45,7 +50,6 @@ def check_student(request):
                 'Dom': 7
             }
 
-
             hora_actual = datetime.now(tz)
             hora_actual_str = hora_actual.isoformat()
 
@@ -54,9 +58,7 @@ def check_student(request):
             for row in results:
                 carnet, aula_result, dias, hora, codmat, ciclo = row
                 lista_dias = dias.split('-')
-
                 dias_numericos = [dias_semana.get(dia, 0) for dia in lista_dias]
-
                 es_dia_valido = dia_actual in dias_numericos
 
                 hora_inicio_str, hora_fin_str = hora.split('-')
@@ -105,7 +107,7 @@ def check_student(request):
                             if not existe_asistencia:
                                 collection.update_one(
                                     {'_id': carnet},
-                                    {'$push': {'asistencias': {'carnet':carnet, 'ciclo': ciclo, 'codMat': codmat, 'fechas': [hora_actual_str]}}}
+                                    {'$push': {'asistencias': {'carnet': carnet, 'ciclo': ciclo, 'codMat': codmat, 'fechas': [hora_actual_str]}}}
                                 )
                             else:
                                 collection.update_one(
