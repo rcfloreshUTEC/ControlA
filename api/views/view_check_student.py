@@ -28,12 +28,11 @@ def check_student(request):
             # Realizar la consulta en la base de datos
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT a.Carnet, b.Aula, b.Dias, b.hora, b.CodMat, b.Ciclo
-                    FROM academic_cargainscripcion a, academic_cargaacademica b
+                    SELECT a.Carnet, b.Aula, b.Dias, b.hora, b.CodMat, b.Ciclo, a.Seccion
+                    FROM academic_cargainscripcion a
+                    JOIN academic_cargaacademica b ON a.CodMat = b.CodMat AND a.Seccion = b.Seccion
                     WHERE b.Aula = %s
                     AND a.Carnet = %s
-                    AND a.Seccion = b.Seccion
-                    AND a.CodMat = b.CodMat
                 """, [aula, carnet])
 
                 results = cursor.fetchall()
@@ -56,7 +55,7 @@ def check_student(request):
             data = []
             rsmdb = False
             for row in results:
-                carnet, aula_result, dias, hora, codmat, ciclo = row
+                carnet, aula_result, dias, hora, codmat, ciclo, seccion = row
                 lista_dias = dias.split('-')
                 dias_numericos = [dias_semana.get(dia, 0) for dia in lista_dias]
                 es_dia_valido = dia_actual in dias_numericos
@@ -74,6 +73,7 @@ def check_student(request):
                     'Hora': hora,
                     'CodMat': codmat,
                     'Ciclo': ciclo,
+                    'Seccion': seccion,
                     'DiaValido': es_dia_valido,
                     'AsistenciaValida': asistencia_valida
                 })
@@ -93,6 +93,7 @@ def check_student(request):
                                         'carnet': carnet,
                                         'ciclo': ciclo,
                                         'codMat': codmat,
+                                        'seccion': seccion,
                                         'fechas': [hora_actual_str]
                                     }
                                 ]
@@ -100,18 +101,18 @@ def check_student(request):
                             collection.replace_one({'_id': carnet}, nuevo_documento, upsert=True)
                         else:
                             existe_asistencia = any(
-                                asistencia.get('ciclo') == ciclo and asistencia.get('codMat') == codmat
+                                asistencia.get('ciclo') == ciclo and asistencia.get('codMat') == codmat and asistencia.get('seccion') == seccion
                                 for asistencia in documento['asistencias']
                             )
 
                             if not existe_asistencia:
                                 collection.update_one(
                                     {'_id': carnet},
-                                    {'$push': {'asistencias': {'carnet': carnet, 'ciclo': ciclo, 'codMat': codmat, 'fechas': [hora_actual_str]}}}
+                                    {'$push': {'asistencias': {'carnet': carnet, 'ciclo': ciclo, 'codMat': codmat, 'seccion': seccion, 'fechas': [hora_actual_str]}}}
                                 )
                             else:
                                 collection.update_one(
-                                    {'_id': carnet, 'asistencias.ciclo': ciclo, 'asistencias.codMat': codmat},
+                                    {'_id': carnet, 'asistencias.ciclo': ciclo, 'asistencias.codMat': codmat, 'asistencias.seccion': seccion},
                                     {'$addToSet': {'asistencias.$.fechas': hora_actual_str}}
                                 )
 

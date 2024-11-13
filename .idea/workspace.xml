@@ -6,9 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="79e7a344-433e-419a-9d7c-d9829b520dea" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/academic/models/model_carga_inscripcion.py" beforeDir="false" afterPath="$PROJECT_DIR$/academic/models/model_carga_inscripcion.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/views/api_fakeinfo.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/views/api_fakeinfo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/views/api_powermongo.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/views/api_powermongo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api/views/view_check_student.py" beforeDir="false" afterPath="$PROJECT_DIR$/api/views/view_check_student.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -51,6 +49,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Django Server.ControlA.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
@@ -74,6 +73,7 @@
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="DJANGO_SETTINGS_MODULE" value="ControlA.settings" />
       </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="" />
@@ -120,7 +120,9 @@
       <workItem from="1730758737194" duration="4896000" />
       <workItem from="1730774943771" duration="9496000" />
       <workItem from="1731371361572" duration="8540000" />
-      <workItem from="1731421575717" duration="6850000" />
+      <workItem from="1731421575717" duration="12218000" />
+      <workItem from="1731450537446" duration="42000" />
+      <workItem from="1731451457353" duration="4342000" />
     </task>
     <servers />
   </component>
