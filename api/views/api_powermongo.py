@@ -5,6 +5,16 @@ from django.conf import settings
 from django.db import connection
 
 
+def convert_to_str(data):
+    """Convierte todos los valores en un diccionario o lista a cadenas."""
+    if isinstance(data, dict):
+        return {k: convert_to_str(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [convert_to_str(item) for item in data]
+    else:
+        return str(data)
+
+
 @csrf_exempt
 def get_mongo_data(request):
     api_key = request.GET.get('api_key')
@@ -20,8 +30,9 @@ def get_mongo_data(request):
         db = client[settings.DATABASES['mongodb']['NAME']]
         collection = db['mdb_asistencia']
 
-        # Obtener datos de MongoDB
+        # Obtener datos de MongoDB y convertir todos los campos a cadenas
         mongo_data = list(collection.find({}, {'_id': 0}))
+        mongo_data = convert_to_str(mongo_data)
 
         # Conectar a MySQL y obtener datos de todas las tablas
         mysql_data = {}
@@ -34,7 +45,7 @@ def get_mongo_data(request):
                 table_name = table[0]
                 cursor.execute(f"SELECT * FROM {table_name}")
                 table_data = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
-                mysql_data[table_name] = table_data
+                mysql_data[table_name] = convert_to_str(table_data)
 
         # Fusionar datos de ambas bases de datos en la respuesta
         data = {
