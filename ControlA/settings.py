@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-8*dp$^vvb^@&@wrqc_kb1-5$nay&d*9oo!0io_=04i4@q@#kdq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.68.106', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.68.107', 'localhost', '127.0.0.1']
 
 # Application definition
 
@@ -163,7 +163,5 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'error',
 }
-
-# API_KEY = os.getenv('API_KEY', '662f1d11-6daa-42bd-9e70-c4114bacf43e')
 
 API_KEY = '662f1d11-6daa-42bd-9e70-c4114bacf43e'
