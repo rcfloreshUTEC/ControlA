@@ -50,7 +50,7 @@ def check_student(request):
             }
 
             hora_actual = datetime.now(tz)
-            hora_actual_str = hora_actual.isoformat()
+            hora_actual_str = hora_actual.strftime("%Y-%m-%dT%H:%M:%S")  # Formato sin microsegundos
 
             data = []
             rsmdb = False

@@ -36,6 +36,16 @@ def agregar_asistencia(request):
             # Convertir la fecha proporcionada a objeto datetime
             tz = pytz.timezone('America/El_Salvador')
             fecha_proporcionada = datetime.strptime(fecha, "%Y-%m-%d %H:%M")
+            fecha_proporcionada = tz.localize(fecha_proporcionada)
+
+            # Obtener la fecha y hora actual en la misma zona horaria
+            fecha_actual = datetime.now(tz)
+
+            # Verificar si la fecha proporcionada es futura
+            if fecha_proporcionada > fecha_actual:
+                messages.error(request, "No se puede agregar asistencia a clases futuras.")
+                return redirect('agregar_asistencia')
+
             hora_actual_str = fecha_proporcionada.isoformat()
 
             # Realizar la consulta en la base de datos
@@ -133,7 +143,7 @@ def agregar_asistencia(request):
                                 collection.update_one(
                                     {'_id': carnet},
                                     {'$push': {
-                                        'asistencias': {'carnet':carnet, 'ciclo': ciclo, 'codMat': codmat, 'fechas': [hora_actual_str]}}}
+                                        'asistencias': {'carnet': carnet, 'ciclo': ciclo, 'codMat': codmat, 'fechas': [hora_actual_str]}}}
                                 )
                             else:
                                 # Actualizar una asistencia existente
