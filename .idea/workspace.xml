@@ -7,7 +7,6 @@
     <list default="true" id="79e7a344-433e-419a-9d7c-d9829b520dea" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/teachers/views/view_agregar_asistencia.py" beforeDir="false" afterPath="$PROJECT_DIR$/teachers/views/view_agregar_asistencia.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/base/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base/sidebar.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -132,7 +131,7 @@
       <workItem from="1732574138705" duration="609000" />
       <workItem from="1732657951935" duration="1630000" />
       <workItem from="1732722367983" duration="1410000" />
-      <workItem from="1733012402268" duration="1944000" />
+      <workItem from="1733012402268" duration="2379000" />
     </task>
     <servers />
   </component>

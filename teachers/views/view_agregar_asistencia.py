@@ -171,7 +171,7 @@ def agregar_asistencia(request):
                 except Exception as e:
                     messages.error(request, f'Error al insertar en MongoDB: {str(e)}')
                     return redirect('agregar_asistencia')
-                
+
             if rsmdb:
                 messages.success(request, "Asistencia registrada exitosamente.")
             else:
