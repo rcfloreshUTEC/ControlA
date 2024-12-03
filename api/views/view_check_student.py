@@ -30,7 +30,7 @@ def check_student(request):
                 cursor.execute("""
                     SELECT a.Carnet, b.Aula, b.Dias, b.hora, b.CodMat, b.Ciclo, a.Seccion
                     FROM academic_cargainscripcion a
-                    JOIN academic_cargaacademica b ON a.CodMat = b.CodMat AND a.Seccion = b.Seccion
+                    JOIN academic_cargaacademica b ON a.CodMat = b.CodMat AND a.Seccion = b.Seccion AND a.Ciclo = b.Ciclo
                     WHERE b.Aula = %s
                     AND a.Carnet = %s
                 """, [aula, carnet])
@@ -94,6 +94,7 @@ def check_student(request):
                                         'ciclo': ciclo,
                                         'codMat': codmat,
                                         'seccion': seccion,
+                                        'dias': dias,  # Agrega los días al documento
                                         'fechas': [hora_actual_str]
                                     }
                                 ]
@@ -108,7 +109,7 @@ def check_student(request):
                             if not existe_asistencia:
                                 collection.update_one(
                                     {'_id': carnet},
-                                    {'$push': {'asistencias': {'carnet': carnet, 'ciclo': ciclo, 'codMat': codmat, 'seccion': seccion, 'fechas': [hora_actual_str]}}}
+                                    {'$push': {'asistencias': {'carnet': carnet, 'ciclo': ciclo, 'codMat': codmat, 'seccion': seccion, 'dias': dias, 'fechas': [hora_actual_str]}}}
                                 )
                             else:
                                 collection.update_one(

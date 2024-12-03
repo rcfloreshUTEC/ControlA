@@ -16,9 +16,10 @@ def api_fakeinfo(request):
             codmat = body.get('codMat')
             seccion = body.get('seccion')
             fecha = body.get('fecha')
+            dias = body.get('Dias')  # Nuevo campo 'Dias'
 
             # Verificar que todos los campos necesarios estén presentes
-            if not (aula and carnet and ciclo and codmat and seccion and fecha):
+            if not (aula and carnet and ciclo and codmat and seccion and fecha and dias):
                 return JsonResponse({'error': 'Datos incompletos en la solicitud.'}, status=400)
 
             # Conectar a MongoDB
@@ -34,7 +35,7 @@ def api_fakeinfo(request):
                 }
             }
             array_filters = [
-                {'asistencia.ciclo': ciclo, 'asistencia.codMat': codmat, 'asistencia.seccion': seccion, 'asistencia.aula': aula}
+                {'asistencia.ciclo': ciclo, 'asistencia.codMat': codmat, 'asistencia.seccion': seccion, 'asistencia.aula': aula, 'asistencia.Dias': dias}
             ]
 
             resultado = collection.update_one(
@@ -51,6 +52,7 @@ def api_fakeinfo(request):
                     'codMat': codmat,
                     'seccion': seccion,
                     'aula': aula,
+                    'Dias': dias,  # Agregar el campo 'Dias'
                     'fechas': [fecha]
                 }
                 collection.update_one(

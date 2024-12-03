@@ -49,12 +49,11 @@ def agregar_asistencia(request):
             # Realizar la consulta en la base de datos
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT a.Carnet, b.Aula, b.Dias, b.hora, b.CodMat, RIGHT(b.Ciclo, 7) as Ciclo
-                    FROM academic_cargainscripcion a, academic_cargaacademica b
+                    SELECT a.Carnet, b.Aula, b.Dias, b.hora, b.CodMat, b.Ciclo, b.Seccion
+                    FROM academic_cargainscripcion a
+                    JOIN academic_cargaacademica b ON a.CodMat = b.CodMat AND a.Seccion = b.Seccion AND a.Ciclo = b.Ciclo
                     WHERE b.Aula = %s
                     AND a.Carnet = %s
-                    AND a.Seccion = b.Seccion
-                    AND a.CodMat = b.CodMat
                 """, [aula, carnet])
 
                 results = cursor.fetchall()
@@ -76,7 +75,7 @@ def agregar_asistencia(request):
             data = []
             rsmdb = False
             for row in results:
-                carnet_db, aula_result, dias, hora, codmat, ciclo = row
+                carnet_db, aula_result, dias, hora, codmat, ciclo, seccion = row
                 # Separar los días en la lista
                 lista_dias = dias.split('-')
 
@@ -101,76 +100,75 @@ def agregar_asistencia(request):
                     'Hora': hora,
                     'CodMat': codmat,
                     'Ciclo': ciclo,
+                    'Seccion': seccion,
                     'DiaValido': es_dia_valido,
                     'AsistenciaValida': asistencia_valida
                 })
 
-            if asistencia_valida:
-                try:
-                    # Conexión a MongoDB
-                    client = MongoClient(settings.DATABASES['mongodb']['CLIENT']['host'],
-                                         settings.DATABASES['mongodb']['CLIENT']['port'])
-                    db = client[settings.DATABASES['mongodb']['NAME']]
-                    collection = db['mdb_asistencia']
+                if asistencia_valida:
+                    try:
+                        # Conexión a MongoDB
+                        client = MongoClient(settings.DATABASES['mongodb']['CLIENT']['host'],
+                                             settings.DATABASES['mongodb']['CLIENT']['port'])
+                        db = client[settings.DATABASES['mongodb']['NAME']]
+                        collection = db['mdb_asistencia']
 
-                    # Formatear ciclo y sección
-                    ciclo_formateado = f"Ciclo {ciclo}"
-                    seccion = row[5]  # Ajusta según el índice donde está la sección en tu consulta SQL
+                        # Verificar si el documento ya existe
+                        documento = collection.find_one({'_id': carnet_db})
 
-                    # Verificar si el documento ya existe
-                    documento = collection.find_one({'_id': carnet})
-
-                    # Crear un documento nuevo si no existe
-                    if documento is None:
-                        nuevo_documento = {
-                            '_id': carnet,
-                            'asistencias': [
-                                {
-                                    'carnet': carnet,
-                                    'ciclo': ciclo_formateado,
-                                    'codMat': codmat,
-                                    'seccion': seccion,
-                                    'fechas': [hora_actual_str]
-                                }
-                            ]
-                        }
-                        collection.insert_one(nuevo_documento)
-                    else:
-                        # Verificar si existe la asistencia para el ciclo, materia y sección
-                        existe_asistencia = any(
-                            asistencia.get('ciclo') == ciclo_formateado and
-                            asistencia.get('codMat') == codmat and
-                            asistencia.get('seccion') == seccion
-                            for asistencia in documento['asistencias']
-                        )
-
-                        if not existe_asistencia:
-                            # Agregar una nueva asistencia
-                            collection.update_one(
-                                {'_id': carnet},
-                                {'$push': {
-                                    'asistencias': {
-                                        'carnet': carnet,
-                                        'ciclo': ciclo_formateado,
+                        if documento is None:
+                            # Crear un documento nuevo si no existe
+                            nuevo_documento = {
+                                '_id': carnet_db,
+                                'asistencias': [
+                                    {
+                                        'carnet': carnet_db,
+                                        'ciclo': ciclo,
                                         'codMat': codmat,
                                         'seccion': seccion,
+                                        'dias': dias,  # Agregar los días al documento
                                         'fechas': [hora_actual_str]
                                     }
-                                }}
-                            )
+                                ]
+                            }
+                            collection.insert_one(nuevo_documento)
                         else:
-                            # Actualizar una asistencia existente agregando la fecha
-                            collection.update_one(
-                                {'_id': carnet, 'asistencias.ciclo': ciclo_formateado, 'asistencias.codMat': codmat,
-                                 'asistencias.seccion': seccion},
-                                {'$addToSet': {'asistencias.$.fechas': hora_actual_str}}
+                            # Verificar si existe la asistencia para el ciclo, materia y sección
+                            existe_asistencia = any(
+                                asistencia.get('ciclo') == ciclo and
+                                asistencia.get('codMat') == codmat and
+                                asistencia.get('seccion') == seccion
+                                for asistencia in documento['asistencias']
                             )
 
-                    rsmdb = True
+                            if not existe_asistencia:
+                                # Agregar una nueva asistencia
+                                collection.update_one(
+                                    {'_id': carnet_db},
+                                    {'$push': {
+                                        'asistencias': {
+                                            'carnet': carnet_db,
+                                            'ciclo': ciclo,
+                                            'codMat': codmat,
+                                            'seccion': seccion,
+                                            'dias': dias,  # Agregar los días al documento
+                                            'fechas': [hora_actual_str]
+                                        }
+                                    }}
+                                )
+                            else:
+                                # Actualizar una asistencia existente agregando la fecha
+                                collection.update_one(
+                                    {'_id': carnet_db, 'asistencias.ciclo': ciclo, 'asistencias.codMat': codmat,
+                                     'asistencias.seccion': seccion},
+                                    {'$addToSet': {'asistencias.$.fechas': hora_actual_str}}
+                                )
 
-                except Exception as e:
-                    messages.error(request, f'Error al insertar en MongoDB: {str(e)}')
-                    return redirect('agregar_asistencia')
+                        rsmdb = True
+
+                    except Exception as e:
+                        messages.error(request, f'Error al insertar en MongoDB: {str(e)}')
+                        return redirect('agregar_asistencia')
 
             if rsmdb:
                 messages.success(request, "Asistencia registrada exitosamente.")
