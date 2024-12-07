@@ -9,9 +9,7 @@ from datetime import datetime, time
 import pytz
 from pymongo import MongoClient
 from django.conf import settings
-
 logger = logging.getLogger(__name__)
-
 
 @login_required()
 def agregar_asistencia(request):
@@ -36,17 +34,26 @@ def agregar_asistencia(request):
             # Convertir la fecha proporcionada a objeto datetime
             tz = pytz.timezone('America/El_Salvador')
             fecha_proporcionada = datetime.strptime(fecha, "%Y-%m-%d %H:%M")
+            fecha_proporcionada = tz.localize(fecha_proporcionada)
+
+            # Obtener la fecha y hora actual en la misma zona horaria
+            fecha_actual = datetime.now(tz)
+
+            # Verificar si la fecha proporcionada es futura
+            if fecha_proporcionada > fecha_actual:
+                messages.error(request, "No se puede agregar asistencia a clases futuras.")
+                return redirect('agregar_asistencia')
+
             hora_actual_str = fecha_proporcionada.isoformat()
 
             # Realizar la consulta en la base de datos
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT a.Carnet, b.Aula, b.Dias, b.hora, b.CodMat, RIGHT(b.Ciclo, 7) as Ciclo
-                    FROM academic_cargainscripcion a, academic_cargaacademica b
+                    SELECT a.Carnet, b.Aula, b.Dias, b.hora, b.CodMat, b.Ciclo, b.Seccion
+                    FROM academic_cargainscripcion a
+                    JOIN academic_cargaacademica b ON a.CodMat = b.CodMat AND a.Seccion = b.Seccion AND a.Ciclo = b.Ciclo
                     WHERE b.Aula = %s
                     AND a.Carnet = %s
-                    AND a.Seccion = b.Seccion
-                    AND a.CodMat = b.CodMat
                 """, [aula, carnet])
 
                 results = cursor.fetchall()
@@ -68,7 +75,7 @@ def agregar_asistencia(request):
             data = []
             rsmdb = False
             for row in results:
-                carnet_db, aula_result, dias, hora, codmat, ciclo = row
+                carnet_db, aula_result, dias, hora, codmat, ciclo, seccion = row
                 # Separar los días en la lista
                 lista_dias = dias.split('-')
 
@@ -93,6 +100,7 @@ def agregar_asistencia(request):
                     'Hora': hora,
                     'CodMat': codmat,
                     'Ciclo': ciclo,
+                    'Seccion': seccion,
                     'DiaValido': es_dia_valido,
                     'AsistenciaValida': asistencia_valida
                 })
@@ -106,39 +114,53 @@ def agregar_asistencia(request):
                         collection = db['mdb_asistencia']
 
                         # Verificar si el documento ya existe
-                        documento = collection.find_one({'_id': carnet})
-                        if documento is None or 'asistencias' not in documento or not isinstance(
-                                documento['asistencias'], list):
+                        documento = collection.find_one({'_id': carnet_db})
+
+                        if documento is None:
+                            # Crear un documento nuevo si no existe
                             nuevo_documento = {
-                                '_id': carnet,
+                                '_id': carnet_db,
                                 'asistencias': [
                                     {
-                                        'carnet': carnet,
+                                        'carnet': carnet_db,
                                         'ciclo': ciclo,
                                         'codMat': codmat,
+                                        'seccion': seccion,
+                                        'dias': dias,  # Agregar los días al documento
                                         'fechas': [hora_actual_str]
                                     }
                                 ]
                             }
-                            collection.replace_one({'_id': carnet}, nuevo_documento, upsert=True)
+                            collection.insert_one(nuevo_documento)
                         else:
-                            # Verificar si existe la asistencia para el ciclo y la materia
+                            # Verificar si existe la asistencia para el ciclo, materia y sección
                             existe_asistencia = any(
-                                asistencia.get('ciclo') == ciclo and asistencia.get('codMat') == codmat
+                                asistencia.get('ciclo') == ciclo and
+                                asistencia.get('codMat') == codmat and
+                                asistencia.get('seccion') == seccion
                                 for asistencia in documento['asistencias']
                             )
 
                             if not existe_asistencia:
                                 # Agregar una nueva asistencia
                                 collection.update_one(
-                                    {'_id': carnet},
+                                    {'_id': carnet_db},
                                     {'$push': {
-                                        'asistencias': {'carnet':carnet, 'ciclo': ciclo, 'codMat': codmat, 'fechas': [hora_actual_str]}}}
+                                        'asistencias': {
+                                            'carnet': carnet_db,
+                                            'ciclo': ciclo,
+                                            'codMat': codmat,
+                                            'seccion': seccion,
+                                            'dias': dias,  # Agregar los días al documento
+                                            'fechas': [hora_actual_str]
+                                        }
+                                    }}
                                 )
                             else:
-                                # Actualizar una asistencia existente
+                                # Actualizar una asistencia existente agregando la fecha
                                 collection.update_one(
-                                    {'_id': carnet, 'asistencias.ciclo': ciclo, 'asistencias.codMat': codmat},
+                                    {'_id': carnet_db, 'asistencias.ciclo': ciclo, 'asistencias.codMat': codmat,
+                                     'asistencias.seccion': seccion},
                                     {'$addToSet': {'asistencias.$.fechas': hora_actual_str}}
                                 )
 
